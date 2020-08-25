@@ -1,26 +1,58 @@
 import React from 'react';
-import logo from './logo.svg';
 import './App.css';
+import Form from './components/Form';
+import Body from './components/Body';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+class App extends React.Component {
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            isFetching: false,
+            error: null,
+            htmlText: '',
+        };
+    }
+
+    fetchHtmlDocument = url => {
+        this.setState({
+            isFetching: true,
+        });
+        fetch(url, {
+            method: 'GET',
+            'Content-type': 'text/html',
+        })
+            .then(response => response.text())
+            .then(data => {
+                    this.setState({
+                        htmlText: data,
+                        isFetching: false,
+                    });
+                },
+                (error) => {
+                    this.setState({
+                        isFetching: false,
+                        error,
+                    });
+                });
+    };
+
+    handleSubmit = ({values: {urlValue}}) => {
+        this.fetchHtmlDocument(urlValue);
+    };
+
+    render() {
+        const {htmlText, isFetching} = this.state;
+        return (
+            <article>
+                <Form onSubmit={this.handleSubmit}/>
+                <section>
+                    <h1>HTML</h1>
+                    {isFetching ? <div className="loader"/> : <Body main={htmlText}/>}
+                </section>
+            </article>
+        );
+    }
 }
 
 export default App;
